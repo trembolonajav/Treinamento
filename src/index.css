@@ -1,0 +1,174 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 97%;
+    --foreground: 0 0% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 12%;
+
+    --primary: 0 0% 13%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 40 8% 92%;
+    --secondary-foreground: 0 0% 12%;
+
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 38 40% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 38 40% 55%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 75%;
+    --sidebar-primary: 38 40% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 38 40% 55%;
+
+    /* Brand tokens — ABR Advogados */
+    --gold: 38 40% 55%;
+    --gold-light: 38 30% 72%;
+    --gold-muted: 38 18% 92%;
+    --graphite: 0 0% 13%;
+    --graphite-deep: 0 0% 8%;
+    --graphite-light: 0 0% 25%;
+    --surface-warm: 40 12% 97%;
+    --surface-elevated: 0 0% 100%;
+
+    --font-heading: 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+
+    --shadow-subtle: 0 1px 3px 0 hsl(0 0% 12% / 0.04), 0 1px 2px -1px hsl(0 0% 12% / 0.04);
+    --shadow-card: 0 4px 16px -2px hsl(0 0% 12% / 0.06), 0 2px 4px -2px hsl(0 0% 12% / 0.04);
+    --shadow-elevated: 0 10px 32px -4px hsl(0 0% 12% / 0.08), 0 4px 8px -2px hsl(0 0% 12% / 0.04);
+  }
+
+  .dark {
+    --background: 0 0% 6%;
+    --foreground: 0 0% 92%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 92%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 92%;
+    --primary: 38 40% 55%;
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 85%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 38 40% 55%;
+    --accent-foreground: 0 0% 6%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 38 40% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer components {
+  .card-premium {
+    @apply bg-card rounded-lg border border-border;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-elevated {
+    @apply bg-card rounded-lg border border-border;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .badge-status {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium rounded-full;
+  }
+
+  .badge-completed {
+    @apply badge-status bg-emerald-50 text-emerald-700 border border-emerald-200;
+  }
+
+  .badge-in-progress {
+    @apply badge-status text-amber-700 border border-amber-200;
+    background: hsl(38 92% 95%);
+  }
+
+  .badge-pending {
+    @apply badge-status bg-muted text-muted-foreground border border-border;
+  }
+
+  .badge-locked {
+    @apply badge-status bg-muted/60 text-muted-foreground/60 border border-border/60;
+  }
+
+  .gold-accent {
+    color: hsl(var(--gold));
+  }
+
+  .gold-accent-bg {
+    background-color: hsl(var(--gold));
+  }
+
+  .gold-gradient {
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--gold-light)));
+  }
+
+  .dark-gradient {
+    background: linear-gradient(180deg, hsl(var(--graphite-deep)), hsl(var(--graphite)));
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
+  }
+}
