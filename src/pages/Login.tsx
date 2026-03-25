@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import logoAbr from '@/assets/logo-abr.png';
 import { useAppState } from '@/lib/app-state';
 
+const PORTABLE_MODE = import.meta.env.VITE_PORTABLE_MODE === 'true';
+
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAppState();
@@ -18,6 +20,25 @@ export default function Login() {
     login(email);
     navigate('/');
   };
+
+  if (PORTABLE_MODE) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6">
+        <div className="card-premium w-full max-w-xl p-10 text-center">
+          <img src={logoAbr} alt="ABR Advogados" className="mx-auto mb-6 h-12" />
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-accent">Modo portatil local</p>
+          <h1 className="mt-3 font-heading text-3xl font-semibold text-foreground">Acesso liberado para teste local</h1>
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
+            Esta versao abre direto o portal do colaborador com dados mockados e arquivos locais da pasta
+            <span className="font-medium text-foreground"> `public/storage`</span>.
+          </p>
+          <Button className="mt-8 bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate('/')}>
+            Entrar no portal local
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">

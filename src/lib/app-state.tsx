@@ -180,7 +180,44 @@ export interface LibraryItemFormInput {
   mimeType?: string;
 }
 
-const STORAGE_KEY = 'abr-training-app-state-v1';
+const PORTABLE_MODE = import.meta.env.VITE_PORTABLE_MODE === 'true';
+const PORTABLE_STORAGE_BASE = import.meta.env.VITE_PORTABLE_STORAGE_BASE || '/storage';
+const STORAGE_KEY = PORTABLE_MODE ? 'abr-training-app-state-portable-v1' : 'abr-training-app-state-v1';
+
+const PORTABLE_COVER_URLS: Record<string, string> = {
+  'trail-1': `${PORTABLE_STORAGE_BASE}/covers/onboarding-abr.svg`,
+  'trail-2': `${PORTABLE_STORAGE_BASE}/covers/compliance-abr.svg`,
+};
+
+const PORTABLE_VIDEO_URLS: Record<string, string> = {
+  l1: `${PORTABLE_STORAGE_BASE}/videos/boas-vindas-abr.mp4`,
+  l2: `${PORTABLE_STORAGE_BASE}/videos/cultura-postura-profissional.mp4`,
+  l3: `${PORTABLE_STORAGE_BASE}/videos/uso-sistemas-internos.mp4`,
+  l4: `${PORTABLE_STORAGE_BASE}/videos/procedimentos-documentais.mp4`,
+  l5: `${PORTABLE_STORAGE_BASE}/videos/atendimento-cliente.mp4`,
+  l6: `${PORTABLE_STORAGE_BASE}/videos/sigilo-lgpd.mp4`,
+  l8: `${PORTABLE_STORAGE_BASE}/videos/abertura-chamados-suporte.mp4`,
+  l9: `${PORTABLE_STORAGE_BASE}/videos/boas-praticas-operacionais.mp4`,
+};
+
+const PORTABLE_MATERIAL_URLS: Record<string, string> = {
+  mat1: `${PORTABLE_STORAGE_BASE}/materials/apresentacao-institucional-abr.pdf`,
+  mat2: `${PORTABLE_STORAGE_BASE}/materials/manual-colaborador.pdf`,
+  mat3: `${PORTABLE_STORAGE_BASE}/materials/codigo-conduta-abr.pdf`,
+  mat4: `${PORTABLE_STORAGE_BASE}/materials/guia-dress-code.pdf`,
+  mat5: `${PORTABLE_STORAGE_BASE}/materials/manual-sistemas-guia-rapido.pdf`,
+  mat6: `${PORTABLE_STORAGE_BASE}/materials/pop-cadastro-processos.pdf`,
+  mat7: `${PORTABLE_STORAGE_BASE}/materials/checklist-configuracao-inicial.pdf`,
+  mat8: `${PORTABLE_STORAGE_BASE}/materials/pop-elaboracao-documentos.pdf`,
+  mat9: `${PORTABLE_STORAGE_BASE}/materials/modelos-documentos-padrao.pdf`,
+  mat10: `${PORTABLE_STORAGE_BASE}/materials/manual-atendimento-cliente.pdf`,
+  mat11: `${PORTABLE_STORAGE_BASE}/materials/politica-privacidade-interna.pdf`,
+  mat12: `${PORTABLE_STORAGE_BASE}/materials/termo-confidencialidade.pdf`,
+  mat13: `${PORTABLE_STORAGE_BASE}/materials/guia-comunicacao-interna.pdf`,
+  mat14: `${PORTABLE_STORAGE_BASE}/materials/manual-suporte-interno.pdf`,
+  mat15: `${PORTABLE_STORAGE_BASE}/materials/guia-boas-praticas.pdf`,
+  mat16: `${PORTABLE_STORAGE_BASE}/materials/comunicado-diretrizes-2026.pdf`,
+};
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
@@ -192,6 +229,27 @@ function createId(prefix: string) {
 
 function deepClone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
+}
+
+function getPortableUrl(map: Record<string, string>, id: string) {
+  return PORTABLE_MODE ? map[id] : undefined;
+}
+
+function getPortableMaterialMimeType(type: LibraryItemType) {
+  if (type === 'thumbnail') return 'image/svg+xml';
+  if (type === 'video') return 'video/mp4';
+  if (type === 'pdf' || type === 'slide') return 'application/pdf';
+  return 'text/plain';
+}
+
+function applyPortableDefaults(state: AppStateData): AppStateData {
+  if (!PORTABLE_MODE) return state;
+  return {
+    ...state,
+    isAuthenticated: true,
+    currentCollaboratorId: state.currentCollaboratorId || 'c2',
+    activeCollaboratorTrailId: state.activeCollaboratorTrailId ?? getPublishedTrails(state.trails)[0]?.id ?? null,
+  };
 }
 
 function materialTypeFromLegacy(type: string): LibraryItemType {
@@ -227,19 +285,24 @@ function buildInitialTrails(): TrailEntity[] {
       mandatory: lesson.status !== 'pending',
       requiresAcknowledgment: lesson.title.toLowerCase().includes('cultura') || lesson.title.toLowerCase().includes('sigilo') || !lesson.hasVideo,
       hasVideo: lesson.hasVideo,
-      videoUrl: lesson.videoUrl,
+      videoUrl: lesson.videoUrl || getPortableUrl(PORTABLE_VIDEO_URLS, lesson.id),
       videoName: lesson.hasVideo ? `${lesson.title}.mp4` : undefined,
       contentStatus: lesson.status === 'pending' ? 'draft' : 'ready',
       order: lessonIndex + 1,
-      materials: lesson.materials.map((material) => ({
-        id: material.id,
-        name: material.title,
-        type: materialTypeFromLegacy(material.type),
-        size: material.size || 'Nao informado',
-        date: lesson.updatedAt,
-        status: 'ativo',
-        note: '',
-      })),
+      materials: lesson.materials.map((material) => {
+        const materialType = materialTypeFromLegacy(material.type);
+        return {
+          id: material.id,
+          name: material.title,
+          type: materialType,
+          size: material.size || 'Nao informado',
+          date: lesson.updatedAt,
+          status: 'ativo',
+          note: '',
+          fileUrl: getPortableUrl(PORTABLE_MATERIAL_URLS, material.id),
+          mimeType: getPortableMaterialMimeType(materialType),
+        };
+      }),
       transcript: lesson.transcript,
       summary: lesson.summary,
       checklist: lesson.checklist,
@@ -258,7 +321,7 @@ function buildInitialTrails(): TrailEntity[] {
       status: 'published',
       estimatedDuration: mockTrail.totalDuration,
       coverName: 'capa-onboarding-abr.jpg',
-      coverUrl: '',
+      coverUrl: getPortableUrl(PORTABLE_COVER_URLS, 'trail-1') || '',
       mandatory: true,
       lastUpdated: TODAY,
       modules: baseModules,
@@ -272,7 +335,7 @@ function buildInitialTrails(): TrailEntity[] {
       status: 'draft',
       estimatedDuration: '3h 40min',
       coverName: 'capa-compliance.jpg',
-      coverUrl: '',
+      coverUrl: getPortableUrl(PORTABLE_COVER_URLS, 'trail-2') || '',
       mandatory: true,
       lastUpdated: TODAY,
       modules: deepClone(baseModules.slice(0, 2)).map((module, index) => ({
@@ -357,15 +420,15 @@ function buildInitialProgress(trails: TrailEntity[]): Record<string, Record<stri
 
 function buildInitialState(): AppStateData {
   const trails = buildInitialTrails();
-  return {
+  return applyPortableDefaults({
     trails,
     library: buildInitialLibrary(trails),
     collaborators: mockCollaborators,
     currentCollaboratorId: 'c2',
     activeCollaboratorTrailId: trails.find((trail) => trail.status === 'published')?.id ?? null,
-    isAuthenticated: false,
+    isAuthenticated: PORTABLE_MODE,
     lessonProgress: buildInitialProgress(trails),
-  };
+  });
 }
 
 function loadState(): AppStateData {
@@ -373,7 +436,7 @@ function loadState(): AppStateData {
   const raw = window.localStorage.getItem(STORAGE_KEY);
   if (!raw) return buildInitialState();
   try {
-    return JSON.parse(raw) as AppStateData;
+    return applyPortableDefaults(JSON.parse(raw) as AppStateData);
   } catch {
     return buildInitialState();
   }
@@ -400,7 +463,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       const collaborator = state.collaborators.find((item) => item.email.toLowerCase() === email.toLowerCase()) ?? state.collaborators[1];
       setState((current) => ({ ...current, isAuthenticated: true, currentCollaboratorId: collaborator.id, activeCollaboratorTrailId: getPublishedTrails(current.trails)[0]?.id ?? null }));
     },
-    logout: () => setState((current) => ({ ...current, isAuthenticated: false })),
+    logout: () => setState((current) => (PORTABLE_MODE ? applyPortableDefaults(current) : { ...current, isAuthenticated: false })),
     createTrail: (input) => setState((current) => ({
       ...current,
       trails: [
