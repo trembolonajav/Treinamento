@@ -2,6 +2,7 @@ import { Search, Bell, ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Progress } from '@/components/ui/progress';
 import logoAbr from '@/assets/logo-abr.png';
+import { getPublishedTrails, getTrailProgress, useAppState } from '@/lib/app-state';
 
 interface HeaderProps {
   progress?: number;
@@ -11,7 +12,12 @@ interface HeaderProps {
 export function AppHeader({ progress = 35, userName = 'Ricardo Oliveira' }: HeaderProps) {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+  const { collaborators, currentCollaboratorId, trails, lessonProgress, activeCollaboratorTrailId } = useAppState();
+  const activeUser = collaborators.find((item) => item.id === currentCollaboratorId);
   const roleLabel = isAdmin ? 'Administrador' : 'Colaborador';
+  const displayName = activeUser?.name ?? userName;
+  const publishedTrail = getPublishedTrails(trails).find((trail) => trail.id === activeCollaboratorTrailId) ?? getPublishedTrails(trails)[0];
+  const displayProgress = publishedTrail ? getTrailProgress(publishedTrail, lessonProgress[currentCollaboratorId]) : progress;
 
   const breadcrumbs = isAdmin
     ? [{ label: 'Painel Administrativo', href: '/admin' }]
@@ -57,8 +63,8 @@ export function AppHeader({ progress = 35, userName = 'Ricardo Oliveira' }: Head
 
           {!isAdmin && (
             <div className="hidden sm:flex items-center gap-2.5">
-              <span className="text-xs text-muted-foreground">{progress}%</span>
-              <Progress value={progress} className="w-24 h-1.5 bg-muted [&>[role=progressbar]]:bg-accent" />
+              <span className="text-xs text-muted-foreground">{displayProgress}%</span>
+              <Progress value={displayProgress} className="w-24 h-1.5 bg-muted [&>[role=progressbar]]:bg-accent" />
             </div>
           )}
 
@@ -70,11 +76,11 @@ export function AppHeader({ progress = 35, userName = 'Ricardo Oliveira' }: Head
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
               <span className="text-xs font-medium text-primary-foreground">
-                {userName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                {displayName.split(' ').map(n => n[0]).join('').slice(0, 2)}
               </span>
             </div>
             <div className="hidden lg:block">
-              <p className="text-sm font-medium text-foreground leading-tight">{userName}</p>
+              <p className="text-sm font-medium text-foreground leading-tight">{displayName}</p>
               <p className="text-xs text-muted-foreground leading-tight">{roleLabel}</p>
             </div>
           </div>

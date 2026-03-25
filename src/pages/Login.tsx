@@ -4,15 +4,18 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoAbr from '@/assets/logo-abr.png';
+import { useAppState } from '@/lib/app-state';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAppState();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('ricardo.oliveira@abradvogados.com.br');
+  const [password, setPassword] = useState('123456');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    login(email);
     navigate('/');
   };
 
